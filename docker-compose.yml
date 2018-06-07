@@ -1,0 +1,36 @@
+version: '2'
+services:
+
+ zabbix-web:
+  image: zabbix/zabbix-web-nginx-mysql:ubuntu-latest
+  ports:
+   - 80:80
+  links:
+    - zabbix-server:zabbix-server
+    - mysql-server:mysql-server
+  env_file:
+    - .env_db_mysql
+
+ zabbix-server:
+  image: zabbix/zabbix-server-mysql:alpine-3.4.4
+  ports:
+   - 10051:10051
+  links:
+   - mysql-server:mysql-server
+  env_file:
+   - .env_db_mysql
+  user: root
+
+ mysql-server:
+  image: mysql:5.7
+  command: [mysqld, --character-set-server=utf8, --collation-server=utf8_bin]
+  volumes_from:
+   - db_data_mysql
+  env_file:
+   - .env_db_mysql
+  user: root
+
+ db_data_mysql:
+  image: busybox
+  volumes:
+   - ./data/mysql/var/lib/mysql:/var/lib/mysql:rw
